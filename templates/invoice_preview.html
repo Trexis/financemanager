@@ -1,0 +1,147 @@
+<html>
+	<head>
+		<title>[*title*]</title>
+		<style>
+			body{font-family:arial;font-size:9pt;min-height:800px;overflow:auto;}
+			.right{text-align:right;}
+			.tableheader{
+				text-decoration:underline;
+			}
+			.entries .tablerow{
+				min-height:20px;
+			}
+
+			table {table-layout:fixed;}
+			.col_3{ text-align:right;}
+			
+			.leftbox{border-top:1px solid black;border-left:1px solid black;border-bottom:1px solid black;}
+			.rightbox{border:1px solid black;}
+			.bdetails{text-decoration:underline;}
+			.entries{
+			}
+			.entries td {
+				vertical-align:top;
+			}
+		</style>
+	</head>
+	<body>
+		<img src="[*templatelocation*]printheader.png"/>
+		<table style="width:100%;"cellpadding="0" cellspacing="0">
+			<tr>
+				<td>t:021 930 1670</td>
+				<td class="right">VAT NO. 4290258849</td>
+			</tr>
+		</table>
+		<table style="width:100%;"cellpadding="0" cellspacing="0">
+			<tr><td/><td style="width:300px;"/></tr>
+			<tr>
+				<td colspan="2" style="text-align:center;border-top:1px solid black;border-left:1px solid black;border-right:1px solid black">VAT INVOICE</td>
+			</tr>
+			<tr>
+				<td valign="top" class="leftbox">
+					<!--
+					[*customer_fax*]<br/>
+					[*customer_email*]<br/>
+					[*customer_rep*]<br/>
+					-->
+					<table width="100%" cellpadding="2" cellspacing="0">
+						<tr>
+							<td class="right">CUSTOMER</td>
+							<td style="width:200px;">[*customer_name*]</td>
+						</tr>
+						<tr>
+							<td class="right">VAT Number</td>
+							<td>[*customer_vat*]</td>
+						</tr>
+						<tr>
+							<td valign="top" class="right">Address</td>
+							<td>[*customer_street*]<br/>
+								[*customer_city*]<br/>
+								[*customer_zip*]<br/>
+							</td>
+						</tr>
+						<tr>
+							<td class="right">Contact Number</td>
+							<td>[*customer_contact*] [*customer_phone*]</td>
+						</tr>
+					</table>
+				</td>
+				<td valign="top" class="rightbox">
+					<table width="100%" cellpadding="2" cellspacing="0">
+						<tr>
+							<td class="right">DATE</td>
+							<td>[*invoice_date*]</td>
+						</tr>
+						<tr>
+							<td class="right">INVOICE NUMBER</td>
+							<td>[*invoice_number*]</td>
+						</tr>
+					</table>
+					<br/>
+					<div style="width:100%;text-align:center;border-top:1px solid black">
+					[*invoice_instructions*]
+					</div>
+				</td>
+			</tr>
+		</table>
+		<br/>
+		<table style="width:100%;" cellpadding="0" cellspacing="0" class="entries">
+			<tr>
+				<td class="tableheader">WEIGHT (KG)</td>
+				<td class="tableheader" style="width:200px;">DESCRIPTION</td>
+				<td class="tableheader" style="width:150px">PRICE PER KG</td>
+				<td class="tableheader" style="width:150px;text-align:right">AMOUNT</td>
+			</tr>
+			[*entries*]
+		</table>
+		<table style="width:100%;" cellpadding="0" cellspacing="0" class="bottomtable">
+			<tr>
+				<td class="leftbox">
+					<table width="100%" cellpadding="0" cellspacing="0">
+						<tr>
+							<td class="right">Received in good order</td>
+							<td style="width:200px;border-bottom:1px solid black">&nbsp;</td>
+						</tr>
+						<tr>
+							<td class="right">Date</td>
+							<td style="border-bottom:1px solid black">&nbsp;</td>
+						</tr>
+						<tr>
+							<td class="right">Payment</td>
+							<td style="border-bottom:1px solid black">&nbsp;</td>
+						</tr>
+						<tr style="height:10px"><td colspan="2"/></tr>
+					</table>
+				</td>
+				<td style="width:300px;" class="rightbox">
+					<table width="100%" cellpadding="0" cellspacing="0">
+						<tr>
+							<td>SUB TOTAL</td>
+							<td class="right" style="width:100px">[*subtotal*]</td>
+						</tr>
+						<tr style="height:10px"><td colspan="2"/></tr>
+						<tr>
+							<td>VAT</td>
+							<td class="right">[*vat*]</td>
+						</tr>
+						<tr style="height:10px"><td colspan="2"/></tr>
+						<tr>
+							<td>TOTAL</td>
+							<td class="right">[*total*]</td>
+						</tr>
+					</table>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2" style="text-align:center;font-weight:bold;color:orange;font-size:8pt;">
+					<br/><br/>
+					<label class="bdetails">BANK DETAILS</label><br/>
+					ACC NO: 62272552475<br/>
+					FNB: NORTH CITY<br/>
+					BRANCH: 260-217<br/>
+					MEULEN FOODS
+				</td>
+			</tr>
+		</table>
+	</body>
+</html>

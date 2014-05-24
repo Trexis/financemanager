@@ -1,0 +1,83 @@
+USE `financemanager`;
+
+ALTER TABLE `financemanager`.`customers` ADD COLUMN `fax` VARCHAR(45) NULL  AFTER `repid` , ADD COLUMN `paymenttype` TINYINT NULL DEFAULT 0  AFTER `fax` ;
+ALTER TABLE `financemanager`.`customers` CHANGE COLUMN `paymenttype` `paymenttype` TINYINT(4) NOT NULL DEFAULT '0'  ;
+
+DROP procedure IF EXISTS `updateCustomer`;
+
+DELIMITER $$
+USE `financemanager`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `updateCustomer`(
+	IN cust_name		VARCHAR(255),
+	IN cust_street		VARCHAR(255),
+	IN cust_city		VARCHAR(255),
+	IN cust_zipcode		VARCHAR(15),
+	IN cust_phone		VARCHAR(45),
+	IN cust_fax			VARCHAR(45),
+	IN cust_vatnumber	VARCHAR(100),
+	IN cust_email		VARCHAR(255),
+	IN cust_contact		VARCHAR(255),
+	IN cust_repid		INT,
+	IN cust_paymenttype	INT
+
+)
+BEGIN
+	DECLARE recordcount INT;
+
+	SET @recordcount = 0;
+
+	SELECT count(*) into @recordcount
+	FROM `customers`
+	WHERE `name` = cust_name;
+
+	IF (@recordcount > 0) THEN
+		UPDATE `customers`
+		SET `name` = cust_name,
+			`street` = cust_street,
+			`city` = cust_city,
+			`zipcode` = cust_zipcode,
+			`phone`	= cust_phone,
+			`fax`	= cust_fax,
+			`vatnumber` = cust_vatnumber,
+			`email` = cust_email,
+			`contact` = cust_contact,
+			`repid` = cust_repid,
+			`paymenttype` = cust_paymenttype
+		WHERE `name` = cust_name;
+	ELSE
+		INSERT INTO `customers` (
+			`name`,
+			`street`,
+			`city`,
+			`zipcode`,
+			`phone`,
+			`fax`,
+			`vatnumber`,
+			`email`,
+			`contact`,
+			`repid`,
+			`paymenttype`
+		) VALUES (
+			cust_name,
+			cust_street,
+			cust_city,
+			cust_zipcode,
+			cust_phone,
+			cust_fax,
+			cust_vatnumber,
+			cust_email,
+			cust_contact,
+			cust_repid,
+			cust_paymenttype
+		);
+	END IF;
+
+	SELECT	*
+	FROM	`customers`
+	WHERE	`name` = cust_name;
+END$$
+
+DELIMITER ;
+
+
+

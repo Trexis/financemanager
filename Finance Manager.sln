@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Finance Manager Dashboard", "Finance Manager Dashboard\Finance Manager Dashboard.csproj", "{714803AA-371C-4D0B-A3DE-D4114A28DC14}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "treXis.Finance.Manager", "treXis.Finance.Manager\treXis.Finance.Manager.csproj", "{BD353FB0-04B4-4DAF-8D03-FA1888D76030}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{714803AA-371C-4D0B-A3DE-D4114A28DC14}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{714803AA-371C-4D0B-A3DE-D4114A28DC14}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{714803AA-371C-4D0B-A3DE-D4114A28DC14}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{714803AA-371C-4D0B-A3DE-D4114A28DC14}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BD353FB0-04B4-4DAF-8D03-FA1888D76030}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BD353FB0-04B4-4DAF-8D03-FA1888D76030}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BD353FB0-04B4-4DAF-8D03-FA1888D76030}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BD353FB0-04B4-4DAF-8D03-FA1888D76030}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

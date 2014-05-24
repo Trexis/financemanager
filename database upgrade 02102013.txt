@@ -1,0 +1,115 @@
+ALTER TABLE `financemanager`.`products` ADD COLUMN `hasvat` TINYINT(1) NOT NULL DEFAULT 0  AFTER `instock` ;
+ALTER TABLE `financemanager`.`invoice_products` ADD COLUMN `hasvat` TINYINT(1) NOT NULL DEFAULT 0  AFTER `quantity` ;
+USE `financemanager`;
+DROP procedure IF EXISTS `addInvoiceProduct`;
+
+DELIMITER $$
+USE `financemanager`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `addInvoiceProduct`(
+	IN inv_id			INT,
+	IN inv_product_name VARCHAR(255),
+	IN inv_price		DOUBLE,
+	IN inv_quantity		DOUBLE,
+	IN inv_hasvat		TINYINT(1)
+)
+BEGIN
+	INSERT INTO `invoice_products`(
+		`invoice_id`,
+		`name`,
+		`price`,
+		`quantity`,
+		`hasvat`
+	) VALUES (
+		inv_id,
+		inv_product_name,
+		inv_price,
+		inv_quantity,
+		inv_hasvat
+	);
+END$$
+
+DELIMITER ;
+
+
+
+USE `financemanager`;
+DROP procedure IF EXISTS `updateProduct`;
+
+DELIMITER $$
+USE `financemanager`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `updateProduct`(
+	IN prod_name		VARCHAR(255),
+	IN prod_price		DOUBLE,
+	IN prod_instock		TINYINT(1),
+	IN prod_hasvat		TINYINT(1)
+
+)
+BEGIN
+	DECLARE recordcount INT;
+
+	SET @recordcount = 0;
+
+	SELECT count(*) into @recordcount
+	FROM `products`
+	WHERE `name` = prod_name;
+
+	IF (@recordcount > 0) THEN
+		UPDATE `products`
+		SET `name` = prod_name,
+			`price` = prod_price,
+			`instock` = prod_instock,
+			`hasvat` = prod_hasvat
+		WHERE `name` = prod_name;
+	ELSE
+		INSERT INTO `products` (
+			`name`,
+			`price`,
+			`instock`,
+			`hasvat`
+		) VALUES (
+			prod_name,
+			prod_price,
+			prod_instock,
+			prod_hasvat
+		);
+	END IF;
+
+	SELECT	*
+	FROM	`products`
+	WHERE	`name` = prod_name;
+END$$
+
+DELIMITER ;
+
+CREATE  TABLE `financemanager`.`payments` (
+  `customer_id` INT NOT NULL ,
+  `invoice_id` INT NULL ,
+  `amount` DOUBLE NOT NULL );
+
+  
+  USE `financemanager`;
+DROP procedure IF EXISTS `addPayment`;
+
+DELIMITER $$
+USE `financemanager`$$
+CREATE PROCEDURE `financemanager`.`addPayment` (
+	IN pay_customer_id 	INT,
+	IN pay_amount		DOUBLE,
+	IN pay_invoice_id	INT
+)
+BEGIN
+
+	INSERT INTO payments (
+		`customer_id`,
+		`invoice_id`,
+		`amount`
+	) VALUES (
+		pay_customer_id,
+		pay_invoice_id,
+		pay_amount
+	);
+
+END$$
+
+DELIMITER ;
+

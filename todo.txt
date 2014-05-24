@@ -1,0 +1,14 @@
+
+Rep can:
+view clients, view reports of invoices, create invoice
+
+
+Add category option to products (meats, chicken, etc)
+
+Show past payments per customer - allow edit/delete
+Show past payments per invoice - allow edit/delete
+
+Report income/expenses column order wrong
+
+automatic email?
+Import invoices from excel

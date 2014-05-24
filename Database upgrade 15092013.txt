@@ -1,0 +1,175 @@
+USE `financemanager`;
+
+ALTER TABLE `financemanager`.`users` ADD COLUMN `phone` VARCHAR(45) NULL  AFTER `role` ;
+
+DROP procedure IF EXISTS `updateUser`;
+
+DELIMITER $$
+USE `financemanager`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `updateUser`(
+	IN user_username	VARCHAR(255),
+	IN user_password	VARCHAR(255),
+	IN user_name		VARCHAR(255),
+	IN user_surname		VARCHAR(255),
+	IN user_email		VARCHAR(255),
+	IN user_phone		VARCHAR(255),
+	IN user_role 		TINYINT
+
+)
+BEGIN
+	DECLARE recordcount INT;
+
+	SET @recordcount = 0;
+
+	SELECT count(*) into @recordcount
+	FROM `users`
+	WHERE `username` = user_username;
+
+	IF (@recordcount > 0) THEN
+		UPDATE `users`
+		SET `username` = user_username,
+			`password` = user_password,
+			`name` = user_name,
+			`surname` = user_surname,
+			`email`	= user_email,
+			`phone`	= user_phone,
+			`role` = user_role
+		WHERE `username` = user_username;
+	ELSE
+		INSERT INTO `users` (
+			`username`,
+			`password`,
+			`name`,
+			`surname`,
+			`email`,
+			`phone`,
+			`role`
+		) VALUES (
+			user_username,
+			user_password,
+			user_name,
+			user_surname,
+			user_email,
+			user_phone,
+			user_role
+		);
+	END IF;
+
+	SELECT	*
+	FROM	`users`
+	WHERE	`username` = user_username;
+END$$
+
+DELIMITER ;
+
+
+ALTER TABLE `financemanager`.`customers` ADD COLUMN `repid` INT NULL  AFTER `contact` , 
+  ADD CONSTRAINT `rep`
+  FOREIGN KEY (`repid` )
+  REFERENCES `financemanager`.`users` (`id` )
+  ON DELETE NO ACTION
+  ON UPDATE NO ACTION
+, ADD INDEX `rep_idx` (`repid` ASC) ;
+
+
+USE `financemanager`;
+DROP procedure IF EXISTS `updateCustomer`;
+
+DELIMITER $$
+USE `financemanager`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `updateCustomer`(
+	IN cust_name		VARCHAR(255),
+	IN cust_street		VARCHAR(255),
+	IN cust_city		VARCHAR(255),
+	IN cust_zipcode		VARCHAR(15),
+	IN cust_phone		VARCHAR(45),
+	IN cust_vatnumber	VARCHAR(100),
+	IN cust_email		VARCHAR(255),
+	IN cust_contact		VARCHAR(255),
+	IN cust_repid		INT
+
+)
+BEGIN
+	DECLARE recordcount INT;
+
+	SET @recordcount = 0;
+
+	SELECT count(*) into @recordcount
+	FROM `customers`
+	WHERE `name` = cust_name;
+
+	IF (@recordcount > 0) THEN
+		UPDATE `customers`
+		SET `name` = cust_name,
+			`street` = cust_street,
+			`city` = cust_city,
+			`zipcode` = cust_zipcode,
+			`phone`	= cust_phone,
+			`vatnumber` = cust_vatnumber,
+			`email` = cust_email,
+			`contact` = cust_contact,
+			`repid` = cust_repid
+		WHERE `name` = cust_name;
+	ELSE
+		INSERT INTO `customers` (
+			`name`,
+			`street`,
+			`city`,
+			`zipcode`,
+			`phone`,
+			`vatnumber`,
+			`email`,
+			`contact`,
+			`repid`
+		) VALUES (
+			cust_name,
+			cust_street,
+			cust_city,
+			cust_zipcode,
+			cust_phone,
+			cust_vatnumber,
+			cust_email,
+			cust_contact,
+			cust_repid
+		);
+	END IF;
+
+	SELECT	*
+	FROM	`customers`
+	WHERE	`name` = cust_name;
+END$$
+
+DELIMITER ;
+
+USE `financemanager`;
+DROP procedure IF EXISTS `listUsers`;
+
+DELIMITER $$
+USE `financemanager`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `listUsers`(
+	IN	users_role 	INT
+)
+BEGIN
+
+	IF users_role is null Then
+		SELECT 	*
+		FROM 	`users`;
+	ELSE
+		SELECT 	*
+		FROM 	`users`
+		WHERE	`users`.`role` = users_role;
+	END IF;
+
+END$$
+
+DELIMITER ;
+
+ALTER TABLE `financemanager`.`customers` DROP FOREIGN KEY `rep` ;
+ALTER TABLE `financemanager`.`customers` CHANGE COLUMN `repid` `repid` INT(11) NOT NULL  , 
+  ADD CONSTRAINT `rep`
+  FOREIGN KEY (`repid` )
+  REFERENCES `financemanager`.`users` (`id` )
+  ON DELETE NO ACTION
+  ON UPDATE NO ACTION;
+
+  

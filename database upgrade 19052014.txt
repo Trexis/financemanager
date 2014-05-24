@@ -1,0 +1,1265 @@
+ALTER TABLE `financemanager`.`products` ADD COLUMN `vatpercentage` DOUBLE NOT NULL DEFAULT 0  AFTER `hasvat` ;
+
+update products
+set vatpercentage = 14
+where hasvat = 1
+
+ALTER TABLE `financemanager`.`products` DROP COLUMN `hasvat` ;
+
+ALTER TABLE `financemanager`.`invoice_products` ADD COLUMN `vatpercentage` DOUBLE NOT NULL DEFAULT 0  AFTER `hasvat` ;
+
+update invoice_products
+set vatpercentage = 14
+where hasvat = 1
+
+ALTER TABLE `financemanager`.`invoice_products` DROP COLUMN `hasvat` ;
+
+
+USE `financemanager`;
+DROP procedure IF EXISTS `updateProduct`;
+
+DELIMITER $$
+USE `financemanager`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `updateProduct`(
+	IN prod_name			VARCHAR(255),
+	IN prod_price			DOUBLE,
+	IN prod_instock			TINYINT(1),
+	IN prod_vatpercentage	DOUBLE
+
+)
+BEGIN
+	DECLARE recordcount INT;
+
+	SET @recordcount = 0;
+
+	SELECT count(*) into @recordcount
+	FROM `products`
+	WHERE `name` = prod_name;
+
+	IF (@recordcount > 0) THEN
+		UPDATE `products`
+		SET `name` = prod_name,
+			`price` = prod_price,
+			`instock` = prod_instock,
+			`hasvat` = prod_vatpercentage
+		WHERE `name` = prod_name;
+	ELSE
+		INSERT INTO `products` (
+			`name`,
+			`price`,
+			`instock`,
+			`vatpercentage`
+		) VALUES (
+			prod_name,
+			prod_price,
+			prod_instock,
+			prod_vatpercentage
+		);
+	END IF;
+
+	SELECT	*
+	FROM	`products`
+	WHERE	`name` = prod_name;
+END$$
+
+DELIMITER ;
+
+USE `financemanager`;
+DROP procedure IF EXISTS `addInvoiceProduct`;
+
+DELIMITER $$
+USE `financemanager`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `addInvoiceProduct`(
+	IN inv_id				INT,
+	IN inv_product_name 	VARCHAR(255),
+	IN inv_price			DOUBLE,
+	IN inv_quantity			DOUBLE,
+	IN inv_vatpercentage	DOUBLE
+)
+BEGIN
+	INSERT INTO `invoice_products`(
+		`invoice_id`,
+		`name`,
+		`price`,
+		`quantity`,
+		`vatpercentage`
+	) VALUES (
+		inv_id,
+		inv_product_name,
+		inv_price,
+		inv_quantity,
+		inv_vatpercentage
+	);
+END$$
+
+DELIMITER ;
+
+
+
+
+
+
+
+
+
+USE `financemanager`;
+DROP procedure IF EXISTS `listInvoicesByDateAndCustomer`;
+
+DELIMITER $$
+USE `financemanager`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `listInvoicesByDateAndCustomer`(
+	IN inv_start_date	VARCHAR(45),
+	IN inv_end_date 	VARCHAR(45),
+	IN inv_customer		VARCHAR(255)
+)
+BEGIN
+	IF inv_customer is null THEN
+		CREATE TEMPORARY TABLE IF NOT EXISTS temp_invoices AS 
+		(
+			SELECT 	*,  0 as 'debit', 0 as 'credit'
+			FROM 	`invoices` 
+			WHERE 	`datetime` >= STR_TO_DATE(inv_start_date,'%Y-%m-%d')
+			AND		`datetime` <= STR_TO_DATE(inv_end_date,'%Y-%m-%d')
+			ORDER BY `datetime` DESC, `id`
+		);
+	ELSE
+		CREATE TEMPORARY TABLE IF NOT EXISTS temp_invoices AS 
+		(
+			SELECT 	`invoices`.*, 0 as 'debit', 0 as 'credit'
+			FROM 	`invoices`, `customers`
+			WHERE 	`customers`.`id` = `invoices`.`customer_id`
+			AND		`customers`.`name` like inv_customer
+			AND 	`datetime` >= STR_TO_DATE(inv_start_date,'%Y-%m-%d')
+			AND		`datetime` <= STR_TO_DATE(inv_end_date,'%Y-%m-%d')
+			ORDER BY `datetime` DESC, `id`
+		);
+	END IF;
+
+	ALTER TABLE temp_invoices CHANGE debit debit DOUBLE DEFAULT 0;
+	ALTER TABLE temp_invoices CHANGE credit credit DOUBLE DEFAULT 0;
+
+	UPDATE temp_invoices
+	SET temp_invoices.debit = (
+			select sum((price*quantity)+(price*quantity*vatpercentage/100))
+			from invoices, invoice_products
+			where invoices.id = invoice_products.invoice_id
+			and temp_invoices.id = invoices.id
+			group by invoice_id
+			order by datetime);
+
+	UPDATE temp_invoices
+	SET temp_invoices.credit = (
+			select sum(amount)
+			from payments
+			where temp_invoices.id = invoice_id
+			group by invoice_id);
+
+
+	SELECT * FROM temp_invoices;
+	drop table temp_invoices;
+END$$
+
+DELIMITER ;
+
+USE `financemanager`;
+DROP procedure IF EXISTS `listInvoices`;
+
+DELIMITER $$
+USE `financemanager`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `listInvoices`()
+BEGIN
+	CREATE TEMPORARY TABLE IF NOT EXISTS temp_invoices AS 
+	(
+		SELECT 	*, 0 as 'debit', 0 as 'credit'
+		FROM 	`invoices`
+	);
+
+	ALTER TABLE temp_invoices CHANGE debit debit DOUBLE DEFAULT 0;
+	ALTER TABLE temp_invoices CHANGE credit credit DOUBLE DEFAULT 0;
+
+	UPDATE temp_invoices
+	SET temp_invoices.debit = (
+			select sum((price*quantity)+(price*quantity*vatpercentage/100))
+			from invoices, invoice_products
+			where invoices.id = invoice_products.invoice_id
+			and temp_invoices.id = invoices.id
+			group by invoice_id
+			order by datetime);
+
+	UPDATE temp_invoices
+	SET temp_invoices.credit = (
+			select sum(amount)
+			from payments
+			where temp_invoices.id = invoice_id
+			group by invoice_id);
+
+	SELECT * FROM temp_invoices; 
+	drop table temp_invoices;
+END$$
+
+DELIMITER ;
+
+
+USE `financemanager`;
+DROP procedure IF EXISTS `getInvoiceById`;
+
+DELIMITER $$
+USE `financemanager`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `getInvoiceById`(
+	IN inv_id INT
+)
+BEGIN
+	CREATE TEMPORARY TABLE IF NOT EXISTS temp_invoices AS 
+	(
+		SELECT 	*, 0 as 'debit', 0 as 'credit'
+		FROM 	`invoices`
+		WHERE	`id` = inv_id
+	);
+
+	ALTER TABLE temp_invoices CHANGE debit debit DOUBLE DEFAULT 0;
+	ALTER TABLE temp_invoices CHANGE credit credit DOUBLE DEFAULT 0;
+
+	UPDATE temp_invoices
+	SET temp_invoices.debit = (
+			select sum((price*quantity)+(price*quantity*vatpercentage/100))
+			from invoices, invoice_products
+			where invoices.id = invoice_products.invoice_id
+			and temp_invoices.id = invoices.id
+			and temp_invoices.id = inv_id
+			group by invoice_id
+			order by datetime)
+	WHERE	`id` = inv_id;
+
+	UPDATE temp_invoices
+	SET temp_invoices.credit = (
+			select sum(amount)
+			from payments
+			where temp_invoices.id = invoice_id
+			group by invoice_id);
+
+
+	SELECT * FROM temp_invoices; 
+	drop table temp_invoices;
+END$$
+
+DELIMITER ;
+
+
+
+
+USE `financemanager`;
+DROP procedure IF EXISTS `getCustomerById`;
+
+DELIMITER $$
+USE `financemanager`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `getCustomerById`(
+	IN cust_id INT
+)
+BEGIN
+	CREATE TEMPORARY TABLE IF NOT EXISTS temp_customers AS 
+	(
+		SELECT	*,  0 as 'debit', 0 as 'credit',
+		(select count(*) from `invoices` where customer_id = `customers`.`id`) as `invoice_count`
+		FROM	`customers`
+		WHERE	`id` = cust_id
+	);
+
+
+	ALTER TABLE temp_customers CHANGE debit debit DOUBLE DEFAULT 0;
+	ALTER TABLE temp_customers CHANGE credit credit DOUBLE DEFAULT 0;
+
+	UPDATE temp_customers
+	SET temp_customers.debit = (
+			select sum((price*quantity)+(price*quantity*vatpercentage/100))
+			from invoices, invoice_products
+			where invoices.id = invoice_products.invoice_id
+			and temp_customers.id = invoices.customer_id
+			group by customer_id
+			order by datetime);
+
+	UPDATE temp_customers
+	SET temp_customers.credit = (
+			select sum(amount)
+			from payments
+			where temp_customers.id = customer_id
+			group by customer_id);
+
+	SELECT * FROM temp_customers;
+	drop table temp_customers;
+END$$
+
+DELIMITER ;
+
+
+USE `financemanager`;
+DROP procedure IF EXISTS `listCustomers`;
+
+DELIMITER $$
+USE `financemanager`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `listCustomers`()
+BEGIN
+	CREATE TEMPORARY TABLE IF NOT EXISTS temp_customers AS 
+	(
+		select *,  0 as 'debit', 0 as 'credit',
+		(select count(*) from `invoices` where customer_id = `customers`.`id`) as `invoice_count`
+		from `customers`
+	);
+
+
+	ALTER TABLE temp_customers CHANGE debit debit DOUBLE DEFAULT 0;
+	ALTER TABLE temp_customers CHANGE credit credit DOUBLE DEFAULT 0;
+
+	UPDATE temp_customers
+	SET temp_customers.debit = (
+			select sum((price*quantity)+(price*quantity*vatpercentage/100))
+			from invoices, invoice_products
+			where invoices.id = invoice_products.invoice_id
+			and temp_customers.id = invoices.customer_id
+			group by customer_id
+			order by datetime);
+
+	UPDATE temp_customers
+	SET temp_customers.credit = (
+			select sum(amount)
+			from payments
+			where temp_customers.id = customer_id
+			group by customer_id);
+
+	SELECT * FROM temp_customers;
+	drop table temp_customers;
+
+END$$
+
+DELIMITER ;
+
+ALTER TABLE `financemanager`.`payments` ADD COLUMN `datetime` DATETIME NOT NULL  AFTER `amount` ;
+ALTER TABLE `financemanager`.`payments` ADD COLUMN `id` INT NOT NULL AUTO_INCREMENT  FIRST 
+, ADD PRIMARY KEY (`id`) ;
+
+
+USE `financemanager`;
+DROP procedure IF EXISTS `addPayment`;
+
+DELIMITER $$
+USE `financemanager`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `addPayment`(
+	IN pay_customer_id 	INT,
+	IN pay_amount		DOUBLE,
+	IN pay_invoice_id	INT,
+	IN pay_datetime		VARCHAR(45)
+
+)
+BEGIN
+
+	INSERT INTO payments (
+		`customer_id`,
+		`invoice_id`,
+		`amount`,
+		`datetime`
+	) VALUES (
+		pay_customer_id,
+		pay_invoice_id,
+		pay_amount,
+		STR_TO_DATE(pay_datetime,'%Y-%m-%d')
+	);
+
+END$$
+
+DELIMITER ;
+
+
+
+
+USE `financemanager`;
+DROP procedure IF EXISTS `getStatementByCustomerAndDate`;
+
+DELIMITER $$
+USE `financemanager`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `getStatementByCustomerAndDate`(
+	IN inv_customer_id	INT,
+	IN inv_start_date	VARCHAR(45),
+	IN inv_end_date 	VARCHAR(45)
+)
+BEGIN
+	IF inv_start_date is null THEN
+		CREATE TEMPORARY TABLE IF NOT EXISTS temp_statement AS 
+		(
+			select `invoices`.id, datetime, sum((price*quantity)+(price*quantity*vatpercentage/100)) as 'debit', 0 as 'credit', 0 as 'type'
+			from invoices, invoice_products
+			where invoices.id = invoice_products.invoice_id
+			and	invoices.customer_id = inv_customer_id
+			group by invoice_products.invoice_id
+			order by datetime
+		);
+
+		ALTER TABLE temp_statement CHANGE credit credit DOUBLE DEFAULT 0;
+
+		INSERT INTO temp_statement
+		SELECT id, datetime, 0, amount, 1
+		FROM payments
+		WHERE 	`payments`.`customer_id` = inv_customer_id;
+		
+	ELSE
+		CREATE TEMPORARY TABLE IF NOT EXISTS temp_statement AS 
+		(
+			select `invoices`.id, datetime, sum((price*quantity)+(price*quantity*vatpercentage/100)) as 'debit', 0 as 'credit', 0 as 'type'
+			from invoices, invoice_products
+			where invoices.id = invoice_products.invoice_id
+			and	invoices.customer_id = inv_customer_id
+			and datetime >= STR_TO_DATE(inv_start_date,'%Y-%m-%d')
+			and datetime <= STR_TO_DATE(inv_end_date,'%Y-%m-%d')
+			group by invoice_products.invoice_id
+			order by datetime
+		);
+
+		ALTER TABLE temp_statement CHANGE credit credit DOUBLE DEFAULT 0;
+
+		INSERT INTO temp_statement
+		SELECT id, datetime, 0, amount, 1
+		FROM payments
+		WHERE `payments`.`customer_id` = inv_customer_id
+		AND datetime >= STR_TO_DATE(inv_start_date,'%Y-%m-%d')
+		AND datetime <= STR_TO_DATE(inv_end_date,'%Y-%m-%d');
+
+	END IF;
+
+	SELECT * 
+	FROM temp_statement
+	ORDER BY datetime;
+
+	drop table temp_statement;
+END$$
+
+DELIMITER ;
+
+
+
+
+
+USE `financemanager`;
+DROP procedure IF EXISTS `getCustomerBalanceByDate`;
+
+DELIMITER $$
+USE `financemanager`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `getCustomerBalanceByDate`(
+	IN cust_id 			INT,
+	IN cust_end_date 	VARCHAR(45)
+)
+BEGIN
+	CREATE TEMPORARY TABLE IF NOT EXISTS temp_customers AS 
+	(
+		SELECT	*,  0 as 'debit', 0 as 'credit'
+		FROM	`customers`
+		WHERE	`id` = cust_id
+	);
+
+
+	ALTER TABLE temp_customers CHANGE debit debit DOUBLE DEFAULT 0;
+	ALTER TABLE temp_customers CHANGE credit credit DOUBLE DEFAULT 0;
+
+	UPDATE temp_customers
+	SET temp_customers.debit = (
+			select sum((price*quantity)+(price*quantity*vatpercentage/100))
+			from invoices, invoice_products
+			where invoices.id = invoice_products.invoice_id
+			and temp_customers.id = invoices.customer_id
+			and	invoices.datetime < STR_TO_DATE(cust_end_date,'%Y-%m-%d')
+			group by customer_id
+			order by datetime);
+
+	UPDATE temp_customers
+	SET temp_customers.credit = (
+			select sum(amount)
+			from payments
+			where temp_customers.id = customer_id
+			and	payments.datetime < STR_TO_DATE(cust_end_date,'%Y-%m-%d')
+			group by customer_id);
+
+	SELECT * FROM temp_customers;
+	drop table temp_customers;
+END$$
+
+DELIMITER ;
+
+
+USE `financemanager`;
+DROP procedure IF EXISTS `reportProductSales`;
+
+DELIMITER $$
+USE `financemanager`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `reportProductSales`(
+	IN rep_start_date	VARCHAR(45),
+	IN rep_end_date 	VARCHAR(45)
+)
+BEGIN
+	IF rep_start_date is null THEN
+		select name as 'product', sum(quantity) as 'quantity', round(sum(price),2) as 'price', round(sum(price)*vatpercentage/100,2) as 'vat', round(sum(price) + (sum(price)*vatpercentage/100),2) as 'total'
+		from invoice_products
+		group by invoice_products.name;
+	ELSE
+		select name as 'product', sum(quantity) as 'quantity', round(sum(price),2) as 'price', round(sum(price)*vatpercentage/100,2) as 'vat', round(sum(price) + (sum(price)*vatpercentage/100),2) as 'total'
+		from invoice_products, invoices
+		where invoice_products.invoice_id = invoices.id
+		and invoices.datetime >= STR_TO_DATE(rep_start_date,'%Y-%m-%d')
+		and invoices.datetime <= STR_TO_DATE(rep_end_date,'%Y-%m-%d')
+		group by invoice_products.name;
+	END IF;
+
+END$$
+
+DELIMITER ;
+
+
+
+USE `financemanager`;
+DROP procedure IF EXISTS `reportIncomeExpenses`;
+
+DELIMITER $$
+USE `financemanager`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `reportIncomeExpenses`(
+	IN rep_start_date	VARCHAR(45),
+	IN rep_end_date 	VARCHAR(45)
+)
+BEGIN
+	CREATE TEMPORARY TABLE IF NOT EXISTS temp_customers AS 
+	(
+		select *,  0 as 'debit', 0 as 'credit', 0 as 'total'
+		from `customers`
+	);
+
+
+	ALTER TABLE temp_customers CHANGE debit debit DOUBLE DEFAULT 0;
+	ALTER TABLE temp_customers CHANGE credit credit DOUBLE DEFAULT 0;
+	ALTER TABLE temp_customers CHANGE total total DOUBLE DEFAULT 0;
+
+	IF rep_start_date is null THEN
+		UPDATE temp_customers
+		SET temp_customers.debit = (
+				select sum((price*quantity)+(price*quantity*vatpercentage/100))
+				from invoices, invoice_products
+				where invoices.id = invoice_products.invoice_id
+				and temp_customers.id = invoices.customer_id
+				group by customer_id
+				order by datetime);
+
+		UPDATE temp_customers
+		SET temp_customers.credit = (
+				select sum(amount)
+				from payments
+				where temp_customers.id = customer_id
+				group by customer_id);
+	ELSE
+		UPDATE temp_customers
+		SET temp_customers.debit = (
+				select sum((price*quantity)+(price*quantity*vatpercentage/100))
+				from invoices, invoice_products
+				where invoices.id = invoice_products.invoice_id
+				and temp_customers.id = invoices.customer_id
+				and invoices.datetime >= STR_TO_DATE(rep_start_date,'%Y-%m-%d')
+				and invoices.datetime <= STR_TO_DATE(rep_end_date,'%Y-%m-%d')
+				group by customer_id
+				order by datetime);
+
+		UPDATE temp_customers
+		SET temp_customers.credit = (
+				select sum(amount)
+				from payments
+				where temp_customers.id = customer_id
+				and payments.datetime >= STR_TO_DATE(rep_start_date,'%Y-%m-%d')
+				and payments.datetime <= STR_TO_DATE(rep_end_date,'%Y-%m-%d')
+				group by customer_id);
+	END IF;
+
+	UPDATE temp_customers
+	Set debit = 0.00
+	WHERE debit is null;
+
+	UPDATE temp_customers
+	Set credit = 0.00
+	WHERE credit is null;
+
+	DELETE
+	FROM temp_customers
+	WHERE debit = 0
+	AND credit = 0;
+
+	UPDATE temp_customers
+	Set total = debit-credit;
+
+	CREATE TEMPORARY TABLE IF NOT EXISTS temp_results AS 
+	(
+		SELECT name as 'Customer', debit, credit, total FROM temp_customers
+	);
+
+	INSERT INTO temp_results
+	SELECT "TOTALS", sum(debit), sum(credit), sum(total)
+	FROM temp_customers;
+
+	SELECT customer, round(debit,2) as 'debit', round(credit,2) as 'credit', round(total,2) as 'total' FROM temp_results;
+
+	drop table temp_customers;
+	drop table temp_results;
+END$$
+
+DELIMITER ;
+
+
+USE `financemanager`;
+DROP procedure IF EXISTS `updateInvoice`;
+
+DELIMITER $$
+USE `financemanager`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `updateInvoice`(
+	IN inv_id			INT,
+	IN inv_customer_id	INT,
+	IN inv_datetime		VARCHAR(45),
+	IN inv_createdby	VARCHAR(255),
+	IN inv_instructions VARCHAR(255)
+)
+BEGIN
+
+	IF inv_id is null THEN
+		INSERT INTO `invoices` (
+			`datetime`,
+			`customer_id`,
+			`instructions`,
+			`createdby`
+		) VALUES (
+			STR_TO_DATE(inv_datetime,'%Y-%m-%d'),
+			inv_customer_id,
+			inv_instructions,
+			inv_createdby
+		);
+
+		CREATE TEMPORARY TABLE IF NOT EXISTS temp_invoices AS 
+		(
+			SELECT	*, 0 as 'debit', 0 as 'credit'
+			FROM	`invoices`
+			WHERE	`id` = LAST_INSERT_ID()
+		);
+	ELSE
+		UPDATE `invoices`
+		SET `datetime` = STR_TO_DATE(inv_datetime,'%Y-%m-%d'),
+			`customer_id` = inv_customer_id,
+			`instructions` = inv_instructions,
+			`createdby` = inv_createdby
+		WHERE `id` = inv_id;
+
+		CREATE TEMPORARY TABLE IF NOT EXISTS temp_invoices AS 
+		(
+			SELECT	*, 0 as 'debit', 0 as 'credit'
+			FROM	`invoices`
+			WHERE	`id` = inv_id
+		);
+	END IF;
+
+	ALTER TABLE temp_invoices CHANGE debit debit DOUBLE DEFAULT 0;
+	ALTER TABLE temp_invoices CHANGE credit credit DOUBLE DEFAULT 0;
+
+	UPDATE temp_invoices
+	SET temp_invoices.debit = (
+			select sum((price*quantity)+(price*quantity*vatpercentage/100))
+			from invoices, invoice_products
+			where invoices.id = invoice_products.invoice_id
+			and temp_invoices.id = invoices.id
+			group by invoice_id
+			order by datetime);
+
+	UPDATE temp_invoices
+	SET temp_invoices.credit = (
+			select sum(amount)
+			from payments
+			where temp_invoices.id = invoice_id
+			group by invoice_id);
+
+	SELECT * FROM temp_invoices; 
+	drop table temp_invoices;
+
+END$$
+
+DELIMITER ;
+
+USE `financemanager`;
+DROP procedure IF EXISTS `updateCustomer`;
+
+DELIMITER $$
+USE `financemanager`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `updateCustomer`(
+	IN cust_name		VARCHAR(255),
+	IN cust_street		VARCHAR(255),
+	IN cust_city		VARCHAR(255),
+	IN cust_zipcode		VARCHAR(15),
+	IN cust_phone		VARCHAR(45),
+	IN cust_fax			VARCHAR(45),
+	IN cust_vatnumber	VARCHAR(100),
+	IN cust_email		VARCHAR(255),
+	IN cust_contact		VARCHAR(255),
+	IN cust_repid		INT,
+	IN cust_paymenttype	INT
+
+)
+BEGIN
+	DECLARE recordcount INT;
+
+	SET @recordcount = 0;
+
+	SELECT count(*) into @recordcount
+	FROM `customers`
+	WHERE `name` = cust_name;
+
+	IF (@recordcount > 0) THEN
+		UPDATE `customers`
+		SET `name` = cust_name,
+			`street` = cust_street,
+			`city` = cust_city,
+			`zipcode` = cust_zipcode,
+			`phone`	= cust_phone,
+			`fax`	= cust_fax,
+			`vatnumber` = cust_vatnumber,
+			`email` = cust_email,
+			`contact` = cust_contact,
+			`repid` = cust_repid,
+			`paymenttype` = cust_paymenttype
+		WHERE `name` = cust_name;
+	ELSE
+		INSERT INTO `customers` (
+			`name`,
+			`street`,
+			`city`,
+			`zipcode`,
+			`phone`,
+			`fax`,
+			`vatnumber`,
+			`email`,
+			`contact`,
+			`repid`,
+			`paymenttype`
+		) VALUES (
+			cust_name,
+			cust_street,
+			cust_city,
+			cust_zipcode,
+			cust_phone,
+			cust_fax,
+			cust_vatnumber,
+			cust_email,
+			cust_contact,
+			cust_repid,
+			cust_paymenttype
+		);
+	END IF;
+
+	SELECT	*,  0 as 'debit', 0 as 'credit'
+	FROM	`customers`
+	WHERE	`name` = cust_name;
+END$$
+
+DELIMITER ;
+
+ALTER TABLE `financemanager`.`invoices` ADD COLUMN `finalized` TINYINT(1) NOT NULL DEFAULT 0  AFTER `createdby` ;
+
+USE `financemanager`;
+DROP procedure IF EXISTS `updateInvoice`;
+
+DELIMITER $$
+USE `financemanager`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `updateInvoice`(
+	IN inv_id			INT,
+	IN inv_customer_id	INT,
+	IN inv_datetime		VARCHAR(45),
+	IN inv_createdby	VARCHAR(255),
+	IN inv_instructions VARCHAR(255),
+	IN inv_finalized	TINYINT(1)
+)
+BEGIN
+
+	IF inv_id is null THEN
+		INSERT INTO `invoices` (
+			`datetime`,
+			`customer_id`,
+			`instructions`,
+			`createdby`,
+			`finalized`
+		) VALUES (
+			STR_TO_DATE(inv_datetime,'%Y-%m-%d'),
+			inv_customer_id,
+			inv_instructions,
+			inv_createdby,
+			inv_finalized
+		);
+
+		CREATE TEMPORARY TABLE IF NOT EXISTS temp_invoices AS 
+		(
+			SELECT	*, 0 as 'debit', 0 as 'credit'
+			FROM	`invoices`
+			WHERE	`id` = LAST_INSERT_ID()
+		);
+	ELSE
+		UPDATE `invoices`
+		SET `datetime` = STR_TO_DATE(inv_datetime,'%Y-%m-%d'),
+			`customer_id` = inv_customer_id,
+			`instructions` = inv_instructions,
+			`createdby` = inv_createdby,
+			`finalized` = inv_finalized
+		WHERE `id` = inv_id;
+
+		CREATE TEMPORARY TABLE IF NOT EXISTS temp_invoices AS 
+		(
+			SELECT	*, 0 as 'debit', 0 as 'credit'
+			FROM	`invoices`
+			WHERE	`id` = inv_id
+		);
+	END IF;
+
+	ALTER TABLE temp_invoices CHANGE debit debit DOUBLE DEFAULT 0;
+	ALTER TABLE temp_invoices CHANGE credit credit DOUBLE DEFAULT 0;
+
+	UPDATE temp_invoices
+	SET temp_invoices.debit = (
+			select sum((price*quantity)+(price*quantity*vatpercentage/100))
+			from invoices, invoice_products
+			where invoices.id = invoice_products.invoice_id
+			and temp_invoices.id = invoices.id
+			group by invoice_id
+			order by datetime);
+
+	UPDATE temp_invoices
+	SET temp_invoices.credit = (
+			select sum(amount)
+			from payments
+			where temp_invoices.id = invoice_id
+			group by invoice_id);
+
+	SELECT * FROM temp_invoices; 
+	drop table temp_invoices;
+
+END$$
+
+DELIMITER ;
+
+USE `financemanager`;
+DROP procedure IF EXISTS `listInvoices`;
+
+DELIMITER $$
+USE `financemanager`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `listInvoices`()
+BEGIN
+	CREATE TEMPORARY TABLE IF NOT EXISTS temp_invoices AS 
+	(
+		SELECT 	invoices.*, customers.name as 'customer_name', 0 as 'debit', 0 as 'credit'
+		FROM 	invoices, customers
+		WHERE 	invoices.customer_id = customers.id
+	);
+
+	ALTER TABLE temp_invoices CHANGE debit debit DOUBLE DEFAULT 0;
+	ALTER TABLE temp_invoices CHANGE credit credit DOUBLE DEFAULT 0;
+
+	UPDATE temp_invoices
+	SET temp_invoices.debit = (
+			select sum((price*quantity)+(price*quantity*vatpercentage/100))
+			from invoices, invoice_products
+			where invoices.id = invoice_products.invoice_id
+			and temp_invoices.id = invoices.id
+			group by invoice_id
+			order by datetime);
+
+	UPDATE temp_invoices
+	SET temp_invoices.credit = (
+			select sum(amount)
+			from payments
+			where temp_invoices.id = invoice_id
+			group by invoice_id);
+
+	SELECT * FROM temp_invoices; 
+	drop table temp_invoices;
+END$$
+
+DELIMITER ;
+
+
+
+USE `financemanager`;
+DROP procedure IF EXISTS `listInvoicesByDateAndCustomer`;
+
+DELIMITER $$
+USE `financemanager`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `listInvoicesByDateAndCustomer`(
+	IN inv_start_date	VARCHAR(45),
+	IN inv_end_date 	VARCHAR(45),
+	IN inv_customer		VARCHAR(255)
+)
+BEGIN
+	IF inv_customer is null THEN
+		CREATE TEMPORARY TABLE IF NOT EXISTS temp_invoices AS 
+		(
+			SELECT 	`invoices`.*, customers.name as 'customer_name',  0 as 'debit', 0 as 'credit'
+			FROM 	`invoices`, `customers`
+			WHERE 	`customers`.`id` = `invoices`.`customer_id`
+			AND		`datetime` >= STR_TO_DATE(inv_start_date,'%Y-%m-%d')
+			AND		`datetime` <= STR_TO_DATE(inv_end_date,'%Y-%m-%d')
+			ORDER BY `datetime` DESC, `id`
+		);
+	ELSE
+		CREATE TEMPORARY TABLE IF NOT EXISTS temp_invoices AS 
+		(
+			SELECT 	`invoices`.*, customers.name as 'customer_name', 0 as 'debit', 0 as 'credit'
+			FROM 	`invoices`, `customers`
+			WHERE 	`customers`.`id` = `invoices`.`customer_id`
+			AND		`customers`.`name` like inv_customer
+			AND 	`datetime` >= STR_TO_DATE(inv_start_date,'%Y-%m-%d')
+			AND		`datetime` <= STR_TO_DATE(inv_end_date,'%Y-%m-%d')
+			ORDER BY `datetime` DESC, `id`
+		);
+	END IF;
+
+	ALTER TABLE temp_invoices CHANGE debit debit DOUBLE DEFAULT 0;
+	ALTER TABLE temp_invoices CHANGE credit credit DOUBLE DEFAULT 0;
+
+	UPDATE temp_invoices
+	SET temp_invoices.debit = (
+			select sum((price*quantity)+(price*quantity*vatpercentage/100))
+			from invoices, invoice_products
+			where invoices.id = invoice_products.invoice_id
+			and temp_invoices.id = invoices.id
+			group by invoice_id
+			order by datetime);
+
+	UPDATE temp_invoices
+	SET temp_invoices.credit = (
+			select sum(amount)
+			from payments
+			where temp_invoices.id = invoice_id
+			group by invoice_id);
+
+
+	SELECT * FROM temp_invoices;
+	drop table temp_invoices;
+END$$
+
+DELIMITER ;
+
+
+USE `financemanager`;
+DROP procedure IF EXISTS `listInvoicesByDateAndCustomer`;
+
+DELIMITER $$
+USE `financemanager`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `listInvoicesByDateAndCustomer`(
+	IN inv_start_date	VARCHAR(45),
+	IN inv_end_date 	VARCHAR(45),
+	IN inv_customer		VARCHAR(255)
+)
+BEGIN
+	IF inv_customer is null THEN
+		CREATE TEMPORARY TABLE IF NOT EXISTS temp_invoices AS 
+		(
+			SELECT 	`invoices`.*, customers.name as 'customer_name', concat(users.name,' ',users.surname) as repname,  0 as 'debit', 0 as 'credit'
+			FROM 	`invoices`, `customers`, `users`
+			WHERE 	`customers`.`id` = `invoices`.`customer_id`
+			AND		`customers`.`repid` = `users`.`id`
+			AND		`datetime` >= STR_TO_DATE(inv_start_date,'%Y-%m-%d')
+			AND		`datetime` <= STR_TO_DATE(inv_end_date,'%Y-%m-%d')
+			ORDER BY `datetime` DESC, `id`
+		);
+	ELSE
+		CREATE TEMPORARY TABLE IF NOT EXISTS temp_invoices AS 
+		(
+			SELECT 	`invoices`.*, customers.name as 'customer_name', concat(users.name,' ',users.surname)  as repname, 0 as 'debit', 0 as 'credit'
+			FROM 	`invoices`, `customers`, `users`
+			WHERE 	`customers`.`id` = `invoices`.`customer_id`
+			AND		`customers`.`repid` = `users`.`id`
+			AND		`customers`.`name` like inv_customer
+			AND 	`datetime` >= STR_TO_DATE(inv_start_date,'%Y-%m-%d')
+			AND		`datetime` <= STR_TO_DATE(inv_end_date,'%Y-%m-%d')
+			ORDER BY `datetime` DESC, `id`
+		);
+	END IF;
+
+	ALTER TABLE temp_invoices CHANGE debit debit DOUBLE DEFAULT 0;
+	ALTER TABLE temp_invoices CHANGE credit credit DOUBLE DEFAULT 0;
+
+	UPDATE temp_invoices
+	SET temp_invoices.debit = (
+			select sum((price*quantity)+(price*quantity*vatpercentage/100))
+			from invoices, invoice_products
+			where invoices.id = invoice_products.invoice_id
+			and temp_invoices.id = invoices.id
+			group by invoice_id
+			order by datetime);
+
+	UPDATE temp_invoices
+	SET temp_invoices.credit = (
+			select sum(amount)
+			from payments
+			where temp_invoices.id = invoice_id
+			group by invoice_id);
+
+
+	SELECT * FROM temp_invoices;
+	drop table temp_invoices;
+END$$
+
+DELIMITER ;
+
+USE `financemanager`;
+DROP procedure IF EXISTS `listInvoices`;
+
+DELIMITER $$
+USE `financemanager`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `listInvoices`()
+BEGIN
+	CREATE TEMPORARY TABLE IF NOT EXISTS temp_invoices AS 
+	(
+		SELECT 	invoices.*, customers.name as 'customer_name', concat(users.name,' ',users.surname)  as repname, 0 as 'debit', 0 as 'credit'
+		FROM 	invoices, customers, users
+		WHERE 	invoices.customer_id = customers.id
+		AND		customers.repid = users.id
+	);
+
+	ALTER TABLE temp_invoices CHANGE debit debit DOUBLE DEFAULT 0;
+	ALTER TABLE temp_invoices CHANGE credit credit DOUBLE DEFAULT 0;
+
+	UPDATE temp_invoices
+	SET temp_invoices.debit = (
+			select sum((price*quantity)+(price*quantity*vatpercentage/100))
+			from invoices, invoice_products
+			where invoices.id = invoice_products.invoice_id
+			and temp_invoices.id = invoices.id
+			group by invoice_id
+			order by datetime);
+
+	UPDATE temp_invoices
+	SET temp_invoices.credit = (
+			select sum(amount)
+			from payments
+			where temp_invoices.id = invoice_id
+			group by invoice_id);
+
+	SELECT * FROM temp_invoices; 
+	drop table temp_invoices;
+END$$
+
+DELIMITER ;
+
+
+USE `financemanager`;
+DROP procedure IF EXISTS `getInvoiceById`;
+
+DELIMITER $$
+USE `financemanager`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `getInvoiceById`(
+	IN inv_id INT
+)
+BEGIN
+	CREATE TEMPORARY TABLE IF NOT EXISTS temp_invoices AS 
+	(
+		SELECT 	invoices.*, customers.name as 'customer_name', concat(users.name,' ',users.surname)  as repname, 0 as 'debit', 0 as 'credit'
+		FROM 	invoices, customers, users
+		WHERE 	invoices.customer_id = customers.id
+		AND		customers.repid = users.id
+		AND		invoices.id = inv_id
+	);
+
+	ALTER TABLE temp_invoices CHANGE debit debit DOUBLE DEFAULT 0;
+	ALTER TABLE temp_invoices CHANGE credit credit DOUBLE DEFAULT 0;
+
+	UPDATE temp_invoices
+	SET temp_invoices.debit = (
+			select sum((price*quantity)+(price*quantity*vatpercentage/100))
+			from invoices, invoice_products
+			where invoices.id = invoice_products.invoice_id
+			and temp_invoices.id = invoices.id
+			and temp_invoices.id = inv_id
+			group by invoice_id
+			order by datetime)
+	WHERE	`id` = inv_id;
+
+	UPDATE temp_invoices
+	SET temp_invoices.credit = (
+			select sum(amount)
+			from payments
+			where temp_invoices.id = invoice_id
+			group by invoice_id);
+
+
+	SELECT * FROM temp_invoices; 
+	drop table temp_invoices;
+END$$
+
+DELIMITER ;
+
+ALTER TABLE `financemanager`.`invoices` ADD COLUMN `paymentdue` TINYINT(4) NOT NULL DEFAULT 0  AFTER `finalized` ;
+
+USE `financemanager`;
+DROP procedure IF EXISTS `updateInvoice`;
+
+DELIMITER $$
+USE `financemanager`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `updateInvoice`(
+	IN inv_id			INT,
+	IN inv_customer_id	INT,
+	IN inv_datetime		VARCHAR(45),
+	IN inv_createdby	VARCHAR(255),
+	IN inv_instructions VARCHAR(255),
+	IN inv_finalized	TINYINT(1),
+	IN inv_paymentdue	TINYINT(4)
+)
+BEGIN
+
+	IF inv_id is null THEN
+		INSERT INTO `invoices` (
+			`datetime`,
+			`customer_id`,
+			`instructions`,
+			`createdby`,
+			`finalized`,
+			`paymentdue`
+		) VALUES (
+			STR_TO_DATE(inv_datetime,'%Y-%m-%d'),
+			inv_customer_id,
+			inv_instructions,
+			inv_createdby,
+			inv_finalized,
+			inv_paymentdue
+		);
+
+		CREATE TEMPORARY TABLE IF NOT EXISTS temp_invoices AS 
+		(
+			SELECT	*, 0 as 'debit', 0 as 'credit'
+			FROM	`invoices`
+			WHERE	`id` = LAST_INSERT_ID()
+		);
+	ELSE
+		UPDATE `invoices`
+		SET `datetime` = STR_TO_DATE(inv_datetime,'%Y-%m-%d'),
+			`customer_id` = inv_customer_id,
+			`instructions` = inv_instructions,
+			`createdby` = inv_createdby,
+			`finalized` = inv_finalized,
+			`paymentdue` = inv_paymentdue
+		WHERE `id` = inv_id;
+
+		CREATE TEMPORARY TABLE IF NOT EXISTS temp_invoices AS 
+		(
+			SELECT	*, 0 as 'debit', 0 as 'credit'
+			FROM	`invoices`
+			WHERE	`id` = inv_id
+		);
+	END IF;
+
+	ALTER TABLE temp_invoices CHANGE debit debit DOUBLE DEFAULT 0;
+	ALTER TABLE temp_invoices CHANGE credit credit DOUBLE DEFAULT 0;
+
+	UPDATE temp_invoices
+	SET temp_invoices.debit = (
+			select sum((price*quantity)+(price*quantity*vatpercentage/100))
+			from invoices, invoice_products
+			where invoices.id = invoice_products.invoice_id
+			and temp_invoices.id = invoices.id
+			group by invoice_id
+			order by datetime);
+
+	UPDATE temp_invoices
+	SET temp_invoices.credit = (
+			select sum(amount)
+			from payments
+			where temp_invoices.id = invoice_id
+			group by invoice_id);
+
+	SELECT * FROM temp_invoices; 
+	drop table temp_invoices;
+
+END$$
+
+DELIMITER ;
+
+USE `financemanager`;
+DROP procedure IF EXISTS `updateInvoice`;
+
+DELIMITER $$
+USE `financemanager`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `updateInvoice`(
+	IN inv_id			INT,
+	IN inv_customer_id	INT,
+	IN inv_datetime		VARCHAR(45),
+	IN inv_createdby	VARCHAR(255),
+	IN inv_instructions VARCHAR(255),
+	IN inv_finalized	TINYINT(1),
+	IN inv_paymentdue	TINYINT(4)
+)
+BEGIN
+
+	IF inv_id is null THEN
+		INSERT INTO `invoices` (
+			`datetime`,
+			`customer_id`,
+			`instructions`,
+			`createdby`,
+			`finalized`,
+			`paymentdue`
+		) VALUES (
+			STR_TO_DATE(inv_datetime,'%Y-%m-%d'),
+			inv_customer_id,
+			inv_instructions,
+			inv_createdby,
+			inv_finalized,
+			inv_paymentdue
+		);
+
+		CREATE TEMPORARY TABLE IF NOT EXISTS temp_invoices AS 
+		(
+			SELECT 	invoices.*, customers.name as 'customer_name', concat(users.name,' ',users.surname)  as repname, 0 as 'debit', 0 as 'credit'
+			FROM 	invoices, customers, users
+			WHERE 	invoices.customer_id = customers.id
+			AND		customers.repid = users.id
+			AND		invoices.id = LAST_INSERT_ID()
+		);
+	ELSE
+		UPDATE `invoices`
+		SET `datetime` = STR_TO_DATE(inv_datetime,'%Y-%m-%d'),
+			`customer_id` = inv_customer_id,
+			`instructions` = inv_instructions,
+			`createdby` = inv_createdby,
+			`finalized` = inv_finalized,
+			`paymentdue` = inv_paymentdue
+		WHERE `id` = inv_id;
+
+		CREATE TEMPORARY TABLE IF NOT EXISTS temp_invoices AS 
+		(
+			SELECT 	invoices.*, customers.name as 'customer_name', concat(users.name,' ',users.surname)  as repname, 0 as 'debit', 0 as 'credit'
+			FROM 	invoices, customers, users
+			WHERE 	invoices.customer_id = customers.id
+			AND		customers.repid = users.id
+			AND		invoices.id = inv_id
+		);
+	END IF;
+
+	ALTER TABLE temp_invoices CHANGE debit debit DOUBLE DEFAULT 0;
+	ALTER TABLE temp_invoices CHANGE credit credit DOUBLE DEFAULT 0;
+
+	UPDATE temp_invoices
+	SET temp_invoices.debit = (
+			select sum((price*quantity)+(price*quantity*vatpercentage/100))
+			from invoices, invoice_products
+			where invoices.id = invoice_products.invoice_id
+			and temp_invoices.id = invoices.id
+			group by invoice_id
+			order by datetime);
+
+	UPDATE temp_invoices
+	SET temp_invoices.credit = (
+			select sum(amount)
+			from payments
+			where temp_invoices.id = invoice_id
+			group by invoice_id);
+
+	SELECT * FROM temp_invoices; 
+	drop table temp_invoices;
+
+END$$
+
+DELIMITER ;
+
+
+
+

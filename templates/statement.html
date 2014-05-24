@@ -1,0 +1,137 @@
+<html>
+	<head>
+		<title>[*title*]</title>
+		<style>
+			body{font-family:arial;font-size:9pt;min-height:800px;}
+			.right{text-align:right;}
+			table {table-layout:fixed;}
+			
+			.leftbox{border-top:1px solid black;border-left:1px solid black;border-bottom:1px solid black;}
+			.rightbox{border:1px solid black;}
+			.bdetails{text-decoration:underline;}
+			.entries{
+				border:1px solid gray;
+			}
+			.entries td {
+				vertical-align:top;
+			}
+			.entries .tablerow td {
+				border-width: 1px;
+				padding: 1px;
+				border-style: dotted;
+				border-color: gray;
+				background-color: white;
+				-moz-border-radius: ;
+			}
+			.entries .tablerow{
+				max-height:20px;
+			}
+
+			.tableheader{
+				text-decoration:underline;
+				border: 1px solid gray;
+			}
+			.col_2, 
+			.col_3, 
+			.col_4
+			{ 
+				text-align:right;
+				padding-right:5px;
+			}
+			
+			.col_5{
+				text-align:center;
+			}
+
+			</style>
+	</head>
+	<body>
+		<img src="[*templatelocation*]printheader.png"/>
+		<table style="width:100%;"cellpadding="0" cellspacing="0">
+			<tr>
+				<td>t:021 930 1670</td>
+				<td class="right">VAT NO. 4290258849</td>
+			</tr>
+		</table>
+		<table style="width:100%;"cellpadding="0" cellspacing="0">
+			<tr><td/><td style="width:370px;"/></tr>
+			<tr>
+				<td colspan="2" style="text-align:center;border-top:1px solid black;border-left:1px solid black;border-right:1px solid black">STATEMENT</td>
+			</tr>
+			<tr>
+				<td valign="top" class="leftbox">
+					<table width="100%" cellpadding="2" cellspacing="0">
+						<tr>
+							<td class="right">Customer:</td>
+							<td style="width:200px;">[*customer_name*]</td>
+						</tr>
+						<tr>
+							<td class="right">VAT Number:</td>
+							<td>[*customer_vat*]</td>
+						</tr>
+						<tr>
+							<td valign="top" class="right">Address:</td>
+							<td>[*customer_street*]<br/>
+								[*customer_city*]<br/>
+								[*customer_zip*]<br/>
+							</td>
+						</tr>
+						<tr>
+							<td class="right">Contact Number:</td>
+							<td>[*customer_contact*] [*customer_phone*]</td>
+						</tr>
+					</table>
+				</td>
+				<td valign="top" class="rightbox">
+					<table width="100%" cellpadding="2" cellspacing="0">
+						<tr>
+							<td style="width:150px;padding-left:10px">Date of statement</td>
+							<td style="width:10px;">:</td>
+							<td>[*statement_date*]</td>
+						</tr>
+						<tr>
+							<td style="padding-left:10px">Statement period</td>
+							<td>:</td>
+							<td>[*statement_period*]</td>
+						</tr>
+						<tr><td colspan="3">&nbsp;</td></tr>
+						<tr>
+							<td style="padding-left:10px">Opening balance</td>
+							<td>:</td>
+							<td>[*statement_openingbalance*]</td>
+						</tr>
+						<tr>
+							<td style="padding-left:10px">Closing balance</td>
+							<td>:</td>
+							<td><b>[*statement_closingbalance*]</b></td>
+						</tr>
+					</table>
+				</td>
+			</tr>
+		</table>
+		<br/>
+		<table style="width:100%;" cellpadding="0" cellspacing="0" class="entries">
+			<tr>
+				<td class="tableheader" style="width:140px;">Invoice Number</td>
+				<td class="tableheader" style="width:100px;">Invoice Date</td>
+				<td class="tableheader" style="width:100px;text-align:right">Debit</td>
+				<td class="tableheader" style="width:100px;text-align:right">Credit</td>
+				<td class="tableheader" style="width:100px;text-align:right">Balance</td>
+				<td class="tableheader" style="text-align:center">Receipt Number</td>
+			</tr>
+			[*entries*]
+		</table>
+		<table style="width:100%;position:relative;bottom:10px;" cellpadding="0" cellspacing="0">
+			<tr>
+				<td style="text-align:center;font-weight:bold;color:orange;font-size:8pt;">
+					<br/><br/>
+					<label class="bdetails">BANK DETAILS</label><br/>
+					ACC NO: 62272552475<br/>
+					FNB: NORTH CITY<br/>
+					BRANCH: 260-217<br/>
+					MEULEN FOODS
+				</td>
+			</tr>
+		</table>
+	</body>
+</html>
