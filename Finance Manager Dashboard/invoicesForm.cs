@@ -26,6 +26,7 @@ namespace Trexis.Finance.Manager
             buttonEdit.Visible = buttonDelete.Visible = Security.allowInvoiceManagement(this.context.User);
             buttonPayment.Visible = Security.allowPayments(this.context.User);
             buttonFinalize.Visible = Security.allowFinalize(this.context.User);
+            buttonEmail.Visible = Security.allowEmail(this.context.User);
 
             this.Text = this.Text.Replace("[*companyname*]", Properties.Settings.Default.companyname);
         }
@@ -101,6 +102,7 @@ namespace Trexis.Finance.Manager
                 enablePrint((listView.SelectedItems.Count > 0));
                 enablePayment((listView.SelectedItems.Count > 0));
                 enableFinalize((listView.SelectedItems.Count > 0));
+                enableEmail((listView.SelectedItems.Count > 0));
             }
             catch (Exception ex)
             {
@@ -140,11 +142,17 @@ namespace Trexis.Finance.Manager
             enablePrint((listView.SelectedItems.Count > 0));
             enablePayment((listView.SelectedItems.Count > 0));
             enableFinalize((listView.SelectedItems.Count > 0));
+            enableEmail((listView.SelectedItems.Count > 0));
         }
 
         private void enableDelete(Boolean enabled)
         {
             buttonDelete.Enabled = enabled;
+        }
+
+        private void enableEmail(Boolean enabled)
+        {
+            buttonEmail.Enabled = enabled;
         }
 
         private void enableEdit(Boolean enabled)
@@ -288,6 +296,39 @@ namespace Trexis.Finance.Manager
             {
                 Tools.ShowError("Unable to load invoice to perform finalize\n" + ex.Message);
             }
+        }
+
+        private void buttonEmail_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                foreach (ListViewItem item in listView.SelectedItems)
+                {
+                    int id = Convert.ToInt16(item.Tag);
+                    Invoice invoice = new Invoice(id);
+                    if (!invoice.Customer.EmailAddress.Equals(""))
+                    {
+                        Email email = new Email();
+                        if (email.Send(invoice.Customer.EmailAddress, invoice.Customer.Name, "MeulenFoods Invoice " + invoice.Id, invoice.HTMLEmail))
+                        {
+                            Tools.ShowInfo("Invoice email sent to " + invoice.Customer.Name + " [" + invoice.Customer.EmailAddress + "]");
+                        }
+                        else
+                        {
+                            Tools.ShowError(email.ErrorMessage);
+                        }
+                    }
+                    else
+                    {
+                        Tools.ShowInfo("Customer does not have a email address, update the customer email address first.");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Tools.ShowError("Unable to load invoice to perform email\n" + ex.Message);
+            }
+
         }
 
 

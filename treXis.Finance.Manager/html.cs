@@ -49,8 +49,6 @@ namespace Trexis.Finance.Manager
         private void performMerging(Hashtable mergeFields)
         {
             this.mergedhtml = this.templatehtml;
-            this.mergedhtml = this.mergedhtml.Replace("[*title*]", this.title);
-            this.mergedhtml = this.mergedhtml.Replace("[*templatelocation*]", this.templatelocation);
 
             if (mergeFields != null)
             {
@@ -59,6 +57,10 @@ namespace Trexis.Finance.Manager
                     this.mergedhtml = this.mergedhtml.Replace("[*" + key + "*]", mergeFields[key].ToString());
                 }
             }
+
+            //Merge these afterwards, incase we have a custom title or location
+            this.mergedhtml = this.mergedhtml.Replace("[*title*]", this.title);
+            this.mergedhtml = this.mergedhtml.Replace("[*templatelocation*]", this.templatelocation);
         }
 
         public void AddHTML(String placeholder, String HTML)

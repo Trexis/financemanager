@@ -83,6 +83,12 @@
       <DependentUpon>aboutboxForm.cs</DependentUpon>
     </Compile>
     <Compile Include="context.cs" />
+    <Compile Include="importForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="importForm.Designer.cs">
+      <DependentUpon>importForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="reportsForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -186,6 +192,9 @@
     <Compile Include="tools.cs" />
     <EmbeddedResource Include="aboutboxForm.resx">
       <DependentUpon>aboutboxForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="importForm.resx">
+      <DependentUpon>importForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="reportsForm.resx">
       <DependentUpon>reportsForm.cs</DependentUpon>
@@ -315,6 +324,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Logo_32x32.ico" />
+    <None Include="Resources\browse_folder.png" />
+    <None Include="Resources\Tools.png" />
+    <None Include="Resources\import.png" />
     <None Include="Resources\products_report.png" />
     <None Include="Resources\invoices_report.png" />
     <None Include="Resources\reports_32x32.png" />

@@ -38,7 +38,7 @@ namespace Trexis.Finance.Manager
         }
         public static Boolean allowReportsIncomeExpenses(User user)
         {
-            return (user.Role.Equals(Roles.Admin) || user.Role.Equals(Roles.Manager) || user.Role.Equals(Roles.Rep));
+            return (user.Role.Equals(Roles.Admin) || user.Role.Equals(Roles.Manager));
         }
 
         public static Boolean allowInvoicesList(User user)
@@ -76,7 +76,15 @@ namespace Trexis.Finance.Manager
             return (user.Role.Equals(Roles.Admin) || user.Role.Equals(Roles.Manager));
         }
 
+        public static Boolean allowImport(User user)
+        {
+            return (user.Role.Equals(Roles.Admin) || user.Role.Equals(Roles.Manager));
+        }
 
+        public static Boolean allowEmail(User user)
+        {
+            return (user.Role.Equals(Roles.Admin) || user.Role.Equals(Roles.Manager));
+        }
 
     }
 }

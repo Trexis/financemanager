@@ -53,6 +53,7 @@
             this.buttonPrint = new System.Windows.Forms.Button();
             this.buttonPayment = new System.Windows.Forms.Button();
             this.buttonFinalize = new System.Windows.Forms.Button();
+            this.buttonEmail = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // listView
@@ -235,7 +236,7 @@
             // 
             // buttonPrint
             // 
-            this.buttonPrint.Location = new System.Drawing.Point(677, 158);
+            this.buttonPrint.Location = new System.Drawing.Point(677, 137);
             this.buttonPrint.Name = "buttonPrint";
             this.buttonPrint.Size = new System.Drawing.Size(113, 23);
             this.buttonPrint.TabIndex = 13;
@@ -245,7 +246,7 @@
             // 
             // buttonPayment
             // 
-            this.buttonPayment.Location = new System.Drawing.Point(677, 187);
+            this.buttonPayment.Location = new System.Drawing.Point(677, 216);
             this.buttonPayment.Name = "buttonPayment";
             this.buttonPayment.Size = new System.Drawing.Size(113, 23);
             this.buttonPayment.TabIndex = 14;
@@ -255,7 +256,7 @@
             // 
             // buttonFinalize
             // 
-            this.buttonFinalize.Location = new System.Drawing.Point(677, 216);
+            this.buttonFinalize.Location = new System.Drawing.Point(677, 245);
             this.buttonFinalize.Name = "buttonFinalize";
             this.buttonFinalize.Size = new System.Drawing.Size(113, 23);
             this.buttonFinalize.TabIndex = 15;
@@ -263,11 +264,22 @@
             this.buttonFinalize.UseVisualStyleBackColor = true;
             this.buttonFinalize.Click += new System.EventHandler(this.buttonFinalize_Click);
             // 
+            // buttonEmail
+            // 
+            this.buttonEmail.Location = new System.Drawing.Point(677, 166);
+            this.buttonEmail.Name = "buttonEmail";
+            this.buttonEmail.Size = new System.Drawing.Size(113, 23);
+            this.buttonEmail.TabIndex = 16;
+            this.buttonEmail.Text = "Email";
+            this.buttonEmail.UseVisualStyleBackColor = true;
+            this.buttonEmail.Click += new System.EventHandler(this.buttonEmail_Click);
+            // 
             // invoicesForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(802, 443);
+            this.Controls.Add(this.buttonEmail);
             this.Controls.Add(this.buttonFinalize);
             this.Controls.Add(this.buttonPayment);
             this.Controls.Add(this.buttonPrint);
@@ -324,5 +336,6 @@
         private System.Windows.Forms.ColumnHeader Credit;
         private System.Windows.Forms.ColumnHeader Clerk;
         private System.Windows.Forms.Button buttonFinalize;
+        private System.Windows.Forms.Button buttonEmail;
     }
 }

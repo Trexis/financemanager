@@ -41,7 +41,9 @@ namespace Trexis.Finance.Manager
             toolStripDropDownButtonReports.Visible = Security.allowReportsIncomeExpenses(context.User) || Security.allowReportsProducts(context.User);
             incomeexpenseReportToolStripMenuItem.Visible = Security.allowReportsIncomeExpenses(context.User);
             productSalesReportToolStripMenuItem.Visible = Security.allowReportsProducts(context.User);
-            toolStripSeparator3.Visible = (toolStripDropDownButtonReports.Visible);
+            toolStripDropDownButtonTools.Visible = Security.allowImport(context.User);
+            importInvoicesToolStripMenuItem.Visible = Security.allowImport(context.User);
+            toolStripSeparator3.Visible = (toolStripDropDownButtonReports.Visible || toolStripDropDownButtonTools.Visible);
 
         }
 
@@ -130,6 +132,17 @@ namespace Trexis.Finance.Manager
         private void toolStripDropDownButtonReports_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void toolStripDropDownButtonTools_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void importInvoicesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            importForm form = new importForm(this.context);
+            form.Show(this);
         }
 
     }

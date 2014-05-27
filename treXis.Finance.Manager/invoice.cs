@@ -286,15 +286,19 @@ namespace Trexis.Finance.Manager
 
         public String HTML
         {
-            get { return getHTML(false); }
+            get { return getHTML(false, false); }
         }
         public String HTMLPreview
         {
-            get { return getHTML(true); }
+            get { return getHTML(true, false); }
+        }
+        public String HTMLEmail
+        {
+            get { return getHTML(false, true); }
         }
 
 
-        private String getHTML(Boolean preview)
+        private String getHTML(Boolean preview, Boolean email)
         {
             Hashtable mergefields = new Hashtable();
             
@@ -322,6 +326,12 @@ namespace Trexis.Finance.Manager
 
             //Create invoice entries
             HashSet<String[]> tablerows = calculateInvoiceTotals();
+
+            if (email)
+            {
+                mergefields.Add("templatelocation", "http://www.meulenfoods.co.za/email_design/");
+            }
+
 
             String template = "invoice";
             if (preview) template = "invoice_preview";

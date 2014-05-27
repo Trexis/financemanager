@@ -73,6 +73,16 @@ namespace Trexis.Finance.Manager.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap browse_folder {
+            get {
+                object obj = ResourceManager.GetObject("browse_folder", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap customer_new {
             get {
                 object obj = ResourceManager.GetObject("customer_new", resourceCulture);
@@ -106,6 +116,16 @@ namespace Trexis.Finance.Manager.Properties {
         internal static System.Drawing.Bitmap eye {
             get {
                 object obj = ResourceManager.GetObject("eye", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap import {
+            get {
+                object obj = ResourceManager.GetObject("import", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -226,6 +246,16 @@ namespace Trexis.Finance.Manager.Properties {
         internal static System.Drawing.Bitmap statements {
             get {
                 object obj = ResourceManager.GetObject("statements", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Tools {
+            get {
+                object obj = ResourceManager.GetObject("Tools", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

@@ -33,6 +33,9 @@
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader4 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader5 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader6 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.buttonDelete = new System.Windows.Forms.Button();
             this.buttonClose = new System.Windows.Forms.Button();
             this.buttonEdit = new System.Windows.Forms.Button();
@@ -43,9 +46,7 @@
             this.label2 = new System.Windows.Forms.Label();
             this.buttonPayment = new System.Windows.Forms.Button();
             this.buttonStatement = new System.Windows.Forms.Button();
-            this.columnHeader4 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeader5 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeader6 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.buttonEmail = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // listView
@@ -86,6 +87,21 @@
             this.columnHeader3.Text = "Rep";
             this.columnHeader3.Width = 119;
             // 
+            // columnHeader4
+            // 
+            this.columnHeader4.Text = "Debit";
+            this.columnHeader4.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            // 
+            // columnHeader5
+            // 
+            this.columnHeader5.Text = "Credit";
+            this.columnHeader5.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            // 
+            // columnHeader6
+            // 
+            this.columnHeader6.Text = "Balance";
+            this.columnHeader6.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            // 
             // buttonDelete
             // 
             this.buttonDelete.Enabled = false;
@@ -109,7 +125,7 @@
             // 
             // buttonEdit
             // 
-            this.buttonEdit.Location = new System.Drawing.Point(578, 72);
+            this.buttonEdit.Location = new System.Drawing.Point(578, 40);
             this.buttonEdit.Name = "buttonEdit";
             this.buttonEdit.Size = new System.Drawing.Size(111, 23);
             this.buttonEdit.TabIndex = 5;
@@ -165,7 +181,7 @@
             // 
             // buttonPayment
             // 
-            this.buttonPayment.Location = new System.Drawing.Point(578, 125);
+            this.buttonPayment.Location = new System.Drawing.Point(578, 84);
             this.buttonPayment.Name = "buttonPayment";
             this.buttonPayment.Size = new System.Drawing.Size(111, 23);
             this.buttonPayment.TabIndex = 9;
@@ -175,34 +191,30 @@
             // 
             // buttonStatement
             // 
-            this.buttonStatement.Location = new System.Drawing.Point(577, 154);
+            this.buttonStatement.Location = new System.Drawing.Point(578, 113);
             this.buttonStatement.Name = "buttonStatement";
-            this.buttonStatement.Size = new System.Drawing.Size(112, 23);
+            this.buttonStatement.Size = new System.Drawing.Size(111, 23);
             this.buttonStatement.TabIndex = 10;
             this.buttonStatement.Text = "Statement";
             this.buttonStatement.UseVisualStyleBackColor = true;
             this.buttonStatement.Click += new System.EventHandler(this.buttonStatement_Click);
             // 
-            // columnHeader4
+            // buttonEmail
             // 
-            this.columnHeader4.Text = "Debit";
-            this.columnHeader4.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            // 
-            // columnHeader5
-            // 
-            this.columnHeader5.Text = "Credit";
-            this.columnHeader5.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            // 
-            // columnHeader6
-            // 
-            this.columnHeader6.Text = "Balance";
-            this.columnHeader6.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.buttonEmail.Location = new System.Drawing.Point(578, 143);
+            this.buttonEmail.Name = "buttonEmail";
+            this.buttonEmail.Size = new System.Drawing.Size(111, 23);
+            this.buttonEmail.TabIndex = 11;
+            this.buttonEmail.Text = "Email";
+            this.buttonEmail.UseVisualStyleBackColor = true;
+            this.buttonEmail.Click += new System.EventHandler(this.buttonEmail_Click);
             // 
             // customersForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(699, 296);
+            this.Controls.Add(this.buttonEmail);
             this.Controls.Add(this.buttonStatement);
             this.Controls.Add(this.buttonPayment);
             this.Controls.Add(this.label2);
@@ -247,5 +259,6 @@
         private System.Windows.Forms.ColumnHeader columnHeader4;
         private System.Windows.Forms.ColumnHeader columnHeader5;
         private System.Windows.Forms.ColumnHeader columnHeader6;
+        private System.Windows.Forms.Button buttonEmail;
     }
 }

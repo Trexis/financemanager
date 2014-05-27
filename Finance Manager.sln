@@ -5,6 +5,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Finance Manager Dashboard",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "treXis.Finance.Manager", "treXis.Finance.Manager\treXis.Finance.Manager.csproj", "{BD353FB0-04B4-4DAF-8D03-FA1888D76030}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Finance Manager Notification Service", "Finance Manager Notification Service\Finance Manager Notification Service.csproj", "{4109F516-05A3-437E-B7A5-8C6642C28FC9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -19,6 +21,10 @@ Global
 		{BD353FB0-04B4-4DAF-8D03-FA1888D76030}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BD353FB0-04B4-4DAF-8D03-FA1888D76030}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BD353FB0-04B4-4DAF-8D03-FA1888D76030}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4109F516-05A3-437E-B7A5-8C6642C28FC9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4109F516-05A3-437E-B7A5-8C6642C28FC9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4109F516-05A3-437E-B7A5-8C6642C28FC9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4109F516-05A3-437E-B7A5-8C6642C28FC9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

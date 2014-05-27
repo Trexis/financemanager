@@ -25,6 +25,7 @@ namespace Trexis.Finance.Manager
             buttonEdit.Visible = buttonDelete.Visible = Security.allowCustomerManagement(context.User);
             buttonPayment.Visible = Security.allowPayments(context.User);
             buttonStatement.Visible = Security.allowStatementsList(context.User);
+            buttonEmail.Visible = Security.allowEmail(context.User);
 
             this.Text = this.Text.Replace("[*companyname*]", Properties.Settings.Default.companyname);
         }
@@ -76,6 +77,7 @@ namespace Trexis.Finance.Manager
             enableEdit((listView.SelectedItems.Count > 0));
             enablePayment((listView.SelectedItems.Count > 0));
             enableStatement((listView.SelectedItems.Count > 0));
+            enableEmail((listView.SelectedItems.Count > 0));
         }
         private void buttonClose_Click(object sender, EventArgs e)
         {
@@ -117,6 +119,7 @@ namespace Trexis.Finance.Manager
             enableEdit((listView.SelectedItems.Count > 0));
             enablePayment((listView.SelectedItems.Count > 0));
             enableStatement((listView.SelectedItems.Count > 0));
+            enableEmail((listView.SelectedItems.Count > 0));
         }
 
         private void enableDelete(Boolean enabled)
@@ -127,6 +130,10 @@ namespace Trexis.Finance.Manager
         private void enableEdit(Boolean enabled)
         {
             buttonEdit.Enabled = enabled;
+        }
+        private void enableEmail(Boolean enabled)
+        {
+            buttonEmail.Enabled = enabled;
         }
 
         private void enablePayment(Boolean enabled)
@@ -223,6 +230,45 @@ namespace Trexis.Finance.Manager
             {
                 Tools.ShowError("Unable to load customer to load statement\n" + ex.Message);
             }
+        }
+
+        private void buttonEmail_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                foreach (ListViewItem item in listView.SelectedItems)
+                {
+                    int id = Convert.ToInt16(item.Tag);
+                    Customer customer = new Customer(id);
+                    if (!customer.EmailAddress.Equals(""))
+                    {
+                        DateTime enddate = DateTime.Now;
+                        DateTime begindate = DateTime.Now.AddMonths(-1);
+                        begindate = new DateTime(begindate.Year, begindate.Month, 1);
+                        Statement statement = new Statement(customer, true, begindate, enddate);
+
+                        Email email = new Email();
+                        if (email.Send(customer.EmailAddress, customer.Name, "MeulenFoods Statement: " + begindate.ToShortDateString() + "-" + enddate.ToShortDateString(), statement.EmailHTML))
+                        {
+                            Tools.ShowInfo("Statement email sent to " + customer.Name + " [" + customer.EmailAddress + "]");
+                        }
+                        else
+                        {
+                            Tools.ShowError(email.ErrorMessage);
+                        }
+                        
+                    }
+                    else
+                    {
+                        Tools.ShowInfo("Customer does not have a email address, update the customer email address first.");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Tools.ShowError("Unable to load customer\n" + ex.Message);
+            }
+
         }
 
 

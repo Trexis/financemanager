@@ -44,6 +44,7 @@
             this.buttonCancel = new System.Windows.Forms.Button();
             this.buttonGenerate = new System.Windows.Forms.Button();
             this.buttonPrint = new System.Windows.Forms.Button();
+            this.buttonEmail = new System.Windows.Forms.Button();
             this.groupBox2.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -180,11 +181,11 @@
             // 
             // buttonGenerate
             // 
-            this.buttonGenerate.Location = new System.Drawing.Point(110, 235);
+            this.buttonGenerate.Location = new System.Drawing.Point(12, 235);
             this.buttonGenerate.Name = "buttonGenerate";
             this.buttonGenerate.Size = new System.Drawing.Size(75, 23);
             this.buttonGenerate.TabIndex = 11;
-            this.buttonGenerate.Text = "Generate";
+            this.buttonGenerate.Text = "View";
             this.buttonGenerate.UseVisualStyleBackColor = true;
             this.buttonGenerate.Click += new System.EventHandler(this.buttonGenerate_Click);
             // 
@@ -198,11 +199,22 @@
             this.buttonPrint.UseVisualStyleBackColor = true;
             this.buttonPrint.Click += new System.EventHandler(this.buttonPrint_Click);
             // 
+            // buttonEmail
+            // 
+            this.buttonEmail.Location = new System.Drawing.Point(104, 235);
+            this.buttonEmail.Name = "buttonEmail";
+            this.buttonEmail.Size = new System.Drawing.Size(81, 23);
+            this.buttonEmail.TabIndex = 13;
+            this.buttonEmail.Text = "Email";
+            this.buttonEmail.UseVisualStyleBackColor = true;
+            this.buttonEmail.Click += new System.EventHandler(this.buttonEmail_Click);
+            // 
             // statementSearchForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(357, 264);
+            this.Controls.Add(this.buttonEmail);
             this.Controls.Add(this.buttonPrint);
             this.Controls.Add(this.buttonGenerate);
             this.Controls.Add(this.buttonCancel);
@@ -239,5 +251,6 @@
         private System.Windows.Forms.RadioButton radioButtonLastZero;
         private System.Windows.Forms.RadioButton radioButtonComplete;
         private System.Windows.Forms.Button buttonPrint;
+        private System.Windows.Forms.Button buttonEmail;
     }
 }

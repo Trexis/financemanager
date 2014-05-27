@@ -161,33 +161,52 @@ namespace Trexis.Finance.Manager
         {
             get
             {
-                Hashtable mergefields = new Hashtable();
-                mergefields.Add("customer_name", this.customer.Name);
-                mergefields.Add("customer_street", this.customer.Street);
-                mergefields.Add("customer_city", this.customer.City);
-                mergefields.Add("customer_zip", this.customer.Zipcode);
-                mergefields.Add("customer_vat", this.customer.VatNumber);
-                mergefields.Add("customer_phone", this.customer.Phone);
-                mergefields.Add("customer_fax", this.customer.Fax);
-                mergefields.Add("customer_email", this.customer.EmailAddress);
-                mergefields.Add("customer_contact", this.customer.Contact);
-                mergefields.Add("customer_rep", this.customer.Rep.FriendlyName);
-
-                DateTime statementdate = DateTime.Now;
-                mergefields.Add("statement_date", statementdate.ToShortDateString());
-                mergefields.Add("statement_openingbalance", Utilities.MakeMoneyValue(this.openingbalance));
-                mergefields.Add("statement_closingbalance", Utilities.MakeMoneyValue(this.closingbalance));
-                if (this.filtered)
-                {
-                    mergefields.Add("statement_period", this.startdate.ToShortDateString() + " - " + this.enddate.ToShortDateString());
-                } else {
-                    mergefields.Add("statement_period", this.firstentrydate.ToShortDateString() + " - " + statementdate.ToShortDateString());
-                }
-
-                HTML html = new HTML("statement", "Statement " + this.customer.Name, mergefields);
-                html.AddHTML("entries", html.CreateHTMLTableRows(this.listEntries(), false));
-                return html.ToString();
+                return getHTML("statement", "");
             }
+        }
+        public String EmailHTML
+        {
+            get
+            {
+                return getHTML("statement", "http://www.meulenfoods.co.za/email_design/");
+            }
+        }
+
+        private String getHTML(String templatename, String templatelocation)
+        {
+            Hashtable mergefields = new Hashtable();
+            mergefields.Add("customer_name", this.customer.Name);
+            mergefields.Add("customer_street", this.customer.Street);
+            mergefields.Add("customer_city", this.customer.City);
+            mergefields.Add("customer_zip", this.customer.Zipcode);
+            mergefields.Add("customer_vat", this.customer.VatNumber);
+            mergefields.Add("customer_phone", this.customer.Phone);
+            mergefields.Add("customer_fax", this.customer.Fax);
+            mergefields.Add("customer_email", this.customer.EmailAddress);
+            mergefields.Add("customer_contact", this.customer.Contact);
+            mergefields.Add("customer_rep", this.customer.Rep.FriendlyName);
+
+            DateTime statementdate = DateTime.Now;
+            mergefields.Add("statement_date", statementdate.ToShortDateString());
+            mergefields.Add("statement_openingbalance", Utilities.MakeMoneyValue(this.openingbalance));
+            mergefields.Add("statement_closingbalance", Utilities.MakeMoneyValue(this.closingbalance));
+            if (this.filtered)
+            {
+                mergefields.Add("statement_period", this.startdate.ToShortDateString() + " - " + this.enddate.ToShortDateString());
+            }
+            else
+            {
+                mergefields.Add("statement_period", this.firstentrydate.ToShortDateString() + " - " + statementdate.ToShortDateString());
+            }
+
+            if (!templatelocation.Equals(""))
+            {
+                mergefields.Add("templatelocation", templatelocation);
+            }
+
+            HTML html = new HTML(templatename, "Statement " + this.customer.Name, mergefields);
+            html.AddHTML("entries", html.CreateHTMLTableRows(this.listEntries(), false));
+            return html.ToString();
         }
 
 

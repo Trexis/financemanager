@@ -31,6 +31,7 @@ namespace Trexis.Finance.Manager
             labelBalance.Text = Utilities.MakeMoneyValue(customer.Balance);
             dateTimePickerStart.Value = DateTime.Now.AddMonths(-1);
             enableDateSelect(radioButtonDateRange.Checked);
+            buttonEmail.Visible = Security.allowEmail(this.context.User);
         }
 
         private void buttonCancel_Click(object sender, EventArgs e)
@@ -98,6 +99,31 @@ namespace Trexis.Finance.Manager
             else
             {
                 return new Statement(this.customer, false);
+            }
+        }
+
+        private void buttonEmail_Click(object sender, EventArgs e)
+        {
+            Email email = new Email();
+            Statement statement = getStatement();
+
+            DateTime enddate = DateTime.Now;
+            DateTime begindate = DateTime.Now.AddMonths(-1);
+            begindate = new DateTime(begindate.Year, begindate.Month, 1);
+
+            if (radioButtonDateRange.Checked)
+            {
+                begindate = dateTimePickerStart.Value;
+                enddate = dateTimePickerEnd.Value;
+            }
+
+            if (email.Send(this.customer.EmailAddress, this.customer.Name, "MeulenFoods Statement: " + begindate.ToShortDateString() + "-" + enddate.ToShortDateString(), statement.EmailHTML))
+            {
+                Tools.ShowInfo("Statement email sent to " + this.customer.Name + " [" + this.customer.EmailAddress + "]");
+            }
+            else
+            {
+                Tools.ShowError(email.ErrorMessage);
             }
         }
     }

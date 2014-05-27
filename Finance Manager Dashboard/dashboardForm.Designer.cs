@@ -41,6 +41,7 @@
             this.toolStripDropDownButtonReports = new System.Windows.Forms.ToolStripDropDownButton();
             this.incomeexpenseReportToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.productSalesReportToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripDropDownButtonTools = new System.Windows.Forms.ToolStripDropDownButton();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.programToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -50,6 +51,7 @@
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabelLoggedinAs = new System.Windows.Forms.ToolStripStatusLabel();
+            this.importInvoicesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStrip1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
@@ -67,11 +69,12 @@
             this.toolStripSeparator2,
             this.toolStripButtonUsers,
             this.toolStripSeparator3,
-            this.toolStripDropDownButtonReports});
+            this.toolStripDropDownButtonReports,
+            this.toolStripDropDownButtonTools});
             this.toolStrip1.Location = new System.Drawing.Point(0, 24);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
-            this.toolStrip1.Size = new System.Drawing.Size(752, 39);
+            this.toolStrip1.Size = new System.Drawing.Size(811, 39);
             this.toolStrip1.TabIndex = 1;
             this.toolStrip1.Text = "toolStrip1";
             // 
@@ -151,7 +154,7 @@
             // 
             this.incomeexpenseReportToolStripMenuItem.Image = global::Trexis.Finance.Manager.Properties.Resources.invoices_report;
             this.incomeexpenseReportToolStripMenuItem.Name = "incomeexpenseReportToolStripMenuItem";
-            this.incomeexpenseReportToolStripMenuItem.Size = new System.Drawing.Size(226, 38);
+            this.incomeexpenseReportToolStripMenuItem.Size = new System.Drawing.Size(210, 22);
             this.incomeexpenseReportToolStripMenuItem.Text = "Income && Expense Report";
             this.incomeexpenseReportToolStripMenuItem.Click += new System.EventHandler(this.incomeExpenseReportToolStripMenuItem_Click);
             // 
@@ -159,9 +162,20 @@
             // 
             this.productSalesReportToolStripMenuItem.Image = global::Trexis.Finance.Manager.Properties.Resources.products_report;
             this.productSalesReportToolStripMenuItem.Name = "productSalesReportToolStripMenuItem";
-            this.productSalesReportToolStripMenuItem.Size = new System.Drawing.Size(226, 38);
+            this.productSalesReportToolStripMenuItem.Size = new System.Drawing.Size(210, 22);
             this.productSalesReportToolStripMenuItem.Text = "Product Sales Report";
             this.productSalesReportToolStripMenuItem.Click += new System.EventHandler(this.productSalesReportToolStripMenuItem_Click);
+            // 
+            // toolStripDropDownButtonTools
+            // 
+            this.toolStripDropDownButtonTools.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.importInvoicesToolStripMenuItem});
+            this.toolStripDropDownButtonTools.Image = global::Trexis.Finance.Manager.Properties.Resources.Tools;
+            this.toolStripDropDownButtonTools.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripDropDownButtonTools.Name = "toolStripDropDownButtonTools";
+            this.toolStripDropDownButtonTools.Size = new System.Drawing.Size(81, 36);
+            this.toolStripDropDownButtonTools.Text = "Tools";
+            this.toolStripDropDownButtonTools.Click += new System.EventHandler(this.toolStripDropDownButtonTools_Click);
             // 
             // menuStrip1
             // 
@@ -170,7 +184,7 @@
             this.programToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(752, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(811, 24);
             this.menuStrip1.TabIndex = 2;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -225,7 +239,7 @@
             this.toolStripStatusLabelLoggedinAs});
             this.statusStrip1.Location = new System.Drawing.Point(0, 403);
             this.statusStrip1.Name = "statusStrip1";
-            this.statusStrip1.Size = new System.Drawing.Size(752, 22);
+            this.statusStrip1.Size = new System.Drawing.Size(811, 22);
             this.statusStrip1.TabIndex = 4;
             this.statusStrip1.Text = "statusStrip1";
             // 
@@ -237,11 +251,19 @@
             this.toolStripStatusLabelLoggedinAs.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.toolStripStatusLabelLoggedinAs.Click += new System.EventHandler(this.toolStripStatusLabel1_Click);
             // 
+            // importInvoicesToolStripMenuItem
+            // 
+            this.importInvoicesToolStripMenuItem.Image = global::Trexis.Finance.Manager.Properties.Resources.import;
+            this.importInvoicesToolStripMenuItem.Name = "importInvoicesToolStripMenuItem";
+            this.importInvoicesToolStripMenuItem.Size = new System.Drawing.Size(172, 38);
+            this.importInvoicesToolStripMenuItem.Text = "Import Invoices";
+            this.importInvoicesToolStripMenuItem.Click += new System.EventHandler(this.importInvoicesToolStripMenuItem_Click);
+            // 
             // formDashboard
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(752, 425);
+            this.ClientSize = new System.Drawing.Size(811, 425);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.toolStrip1);
             this.Controls.Add(this.menuStrip1);
@@ -288,6 +310,8 @@
         private System.Windows.Forms.ToolStripDropDownButton toolStripDropDownButtonReports;
         private System.Windows.Forms.ToolStripMenuItem incomeexpenseReportToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem productSalesReportToolStripMenuItem;
+        private System.Windows.Forms.ToolStripDropDownButton toolStripDropDownButtonTools;
+        private System.Windows.Forms.ToolStripMenuItem importInvoicesToolStripMenuItem;
     }
 }
 
